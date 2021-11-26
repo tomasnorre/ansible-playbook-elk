@@ -1,0 +1,31 @@
+---
+#
+# Playbook to install the ELK stack + Beats
+#
+- hosts: 
+    - elkservers
+  gather_facts: yes
+  become: yes
+  vars:
+    nginx_remove_default_vhost: true
+    nginx_vhosts:
+      - listen: "80"
+        server_name: "kibana.local"
+        filename: "kibana.tm.conf"
+        extra_parameters: |
+          location / {
+              proxy_pass http://localhost:5601;
+              proxy_http_version 1.1;
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection 'upgrade';
+              proxy_set_header Host $host;
+              proxy_cache_bypass $http_upgrade;
+          }
+  roles:
+  - { role: geerlingguy.nginx }
+  - { role: elasticsearch }
+  - { role: kibana }
+  - { role: logstash }
+  - { role: filebeat }
+  
+

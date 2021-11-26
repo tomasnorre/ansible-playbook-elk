@@ -1,0 +1,30 @@
+---
+#
+# Installing Logstash
+#
+
+- name: Install logstash with apt
+  apt:
+   name: logstash
+   update_cache: yes
+
+- name: Copy configuration beats
+  ansible.builtin.copy:
+    src: config/02-beats-input.conf
+    dest: /etc/logstash/conf.d/02-beats-input.conf  
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy configuration elasticsearch
+  ansible.builtin.copy:
+    src: config/30-elasticsearch-output.conf
+    dest: /etc/logstash/conf.d/30-elasticsearch-output.conf  
+    owner: root
+    group: root
+    mode: '0644'
+  
+- name: Starting Logstash
+  service:
+   name: logstash
+   state: started

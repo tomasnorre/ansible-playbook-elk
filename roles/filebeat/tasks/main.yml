@@ -1,0 +1,41 @@
+---
+#
+# Installing Filebeat
+#
+
+# Install Filebeat 
+
+- name: Install Filebeat with apt
+  apt:
+    name: filebeat
+    update_cache: yes
+
+- name: Copy configuration 
+  ansible.builtin.copy:
+    src: config/filebeat.yml
+    dest: /etc/filebeat/filebeat.yml
+    owner: root
+    group: root
+    mode: '0644'
+
+
+# Setup Filebeat modules
+- name: Enable System
+  ansible.builtin.command: filebeat modules enable system nginx
+
+- name: setup System module
+  ansible.builtin.command: filebeat setup --pipelines --modules system nginx
+
+- name: Load template
+  ansible.builtin.command: filebeat setup --index-management -E output.logstash.enabled=false -E 'output.elasticsearch.hosts=["localhost:9200"]'
+
+- name: disable logstash output and enable elastic output
+  ansible.builtin.command: filebeat setup -E output.logstash.enabled=false -E output.elasticsearch.hosts=['localhost:9200'] -E setup.kibana.host=localhost:5601
+
+# Starting Filebeat
+- name: Starting Filebeat
+  service:
+    name: filebeat
+    state: started
+    enabled: yes
+
